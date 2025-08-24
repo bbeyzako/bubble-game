@@ -271,7 +271,7 @@ async function Draw(){
           if(starImgs.filter(v=>v.loaded).length == 9) starsLoaded = true
         }, 0)
       }
-      a.img.src = `a.img.src = https://srmcgann.github.io/stars/star${i+1}.png`
+      a.img.src = `https://bbeyzako.github.io/bubble-game/stars/star${i+1}.png`
       return a
     })
 
