@@ -1055,7 +1055,7 @@ async function Draw(){
       })
     }
     
-    freq = 2e3
+    freq = 500
     
     advanceRows = () => {
       B.map(v=>{
