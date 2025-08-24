@@ -16,7 +16,7 @@ C = Math.cos
 S = Math.sin
 t = 0
 T = Math.tan
-const shootSound = new Audio('assets/sounds/shoot.wav')
+const shootSound = new Audio('https://bbeyzako.github.io/bubble-game/assets/sounds/shoot.wav')
 
 rsz = window.onresize = () =>{
   let b = document.body
