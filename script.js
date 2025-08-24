@@ -16,6 +16,7 @@ C = Math.cos
 S = Math.sin
 t = 0
 T = Math.tan
+const shootSound = new Audio('assets/sounds/shoot.wav')
 
 rsz = window.onresize = () =>{
   let b = document.body
@@ -1100,6 +1101,10 @@ async function Draw(){
       curShot.vz2 = 0
       curShot.fired = true
       shotTimer = t + shotTimerInterval
+
+      // 🔊 Ses çal
+      shootSound.currentTime = 0  // başa sar
+      shootSound.play()
     }
     
     sTv = -.0066
