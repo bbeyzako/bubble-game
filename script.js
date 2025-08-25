@@ -16,7 +16,14 @@ C = Math.cos
 S = Math.sin
 t = 0
 T = Math.tan
-const shootSound = new Audio('https://bbeyzako.github.io/bubble-game/assets/sounds/shoot.wav')
+const shootSound = new Audio('assets/sounds/shoot.wav')
+// Oyun sonu görselleri – GLOBAL SCOPE’TA olsun
+let death = new Image()
+death.src = 'assets/ui/gameover.png'   // (kendi yolun)
+
+let vicpic = new Image()
+vicpic.src = 'assets/ui/victory.png'   // (kendi yolun)
+
 
 rsz = window.onresize = () =>{
   let b = document.body
@@ -271,7 +278,7 @@ async function Draw(){
           if(starImgs.filter(v=>v.loaded).length == 9) starsLoaded = true
         }, 0)
       }
-      a.img.src = `https://bbeyzako.github.io/bubble-game/stars/star${i+1}.png`
+      a.img.src = `https://srmcgann.github.io/stars/star${i+1}.png`
       return a
     })
 
@@ -1080,13 +1087,17 @@ async function Draw(){
     bg.src = 'https://i.ibb.co/bt8pj4x/bobble-board.png'
     
     
+    //keys = Array(128).fill(false)
+    //c.onkeydown = e => {
+    //  keys[e.keyCode] = true
+    //}
+    //c.onkeyup = e => {
+     // keys[e.keyCode] = false
+    //}
+
     keys = Array(128).fill(false)
-    c.onkeydown = e => {
-      keys[e.keyCode] = true
-    }
-    c.onkeyup = e => {
-      keys[e.keyCode] = false
-    }
+    window.addEventListener('keydown', e => { keys[e.keyCode] = true })
+    window.addEventListener('keyup',   e => { keys[e.keyCode] = false })
     
     shotTimer = 0
     shotTimerInterval = .25
