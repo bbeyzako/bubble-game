@@ -16,13 +16,76 @@ C = Math.cos
 S = Math.sin
 t = 0
 T = Math.tan
-const shootSound = new Audio('assets/sounds/shoot.wav')
+const shootSound = new Audio('Assets/Sounds/shoot.WAV')
+
+// Game state variables
+let gameStarted = false
+let gamePaused = false
+let roundover = false
+let victory = false
+let score = 0
+let highScore = 0
+let B = [] // Game board array
+let queue = [] // Shot queue
+let curShot = {} // Current shot
+let memo = [] // Memory for collision detection
+let cull = [] // Bubbles to remove
+let sparks = [] // Spark effects
+
+// Game configuration variables
+let cl, rw, sp, iBr, rct, ofy, freq, sFreq, sNum, ballValue
+let shotTimer, shotTimerInterval, shotSpeed, sTv, drag, drag2, gunLength
+let sThetav, sTheta, ls, grav, iQueuec
+let keys = Array(128).fill(false)
+
+// DOM elements - will be initialized after DOM is loaded
+let startPopup, gameOverScreen, startGameBtn, tryAgainBtn, gameOverTitle, finalScore, finalHighScore
+
+// Initialize DOM elements and event listeners
+function initializeGameUI() {
+  startPopup = document.getElementById('startPopup')
+  gameOverScreen = document.getElementById('gameOverScreen')
+  startGameBtn = document.getElementById('startGameBtn')
+  tryAgainBtn = document.getElementById('tryAgainBtn')
+  gameOverTitle = document.getElementById('gameOverTitle')
+  finalScore = document.getElementById('finalScore')
+  finalHighScore = document.getElementById('finalHighScore')
+
+  // Event listeners
+  if (startGameBtn) startGameBtn.addEventListener('click', startGame)
+  if (tryAgainBtn) tryAgainBtn.addEventListener('click', restartGame)
+  
+  // Make sure start popup is visible initially
+  if (startPopup) {
+    startPopup.classList.remove('hidden')
+  }
+}
+
+function startGame() {
+  console.log('Starting game...')
+  gameStarted = true
+  if (startPopup) startPopup.classList.add('hidden')
+  c.focus()
+}
+
+function restartGame() {
+  // Simply reload the page - the easiest and most reliable way
+  location.reload()
+}
+
+function showGameOver(victory) {
+  gamePaused = true
+  if (gameOverTitle) gameOverTitle.textContent = victory ? 'Victory!' : 'Game Over!'
+  if (finalScore) finalScore.textContent = score
+  if (finalHighScore) finalHighScore.textContent = highScore
+  if (gameOverScreen) gameOverScreen.classList.remove('hidden')
+}
 // Oyun sonu görselleri – GLOBAL SCOPE’TA olsun
 let death = new Image()
-death.src = 'assets/ui/gameover.png'   // (kendi yolun)
+death.src = 'Assets/ui/gameover.png'   // (kendi yolun)
 
 let vicpic = new Image()
-vicpic.src = 'assets/ui/victory.png'   // (kendi yolun)
+vicpic.src = 'Assets/ui/victory.png'   // (kendi yolun)
 
 
 rsz = window.onresize = () =>{
@@ -42,6 +105,16 @@ rsz = window.onresize = () =>{
 rsz()
 
 async function Draw(){
+  // Don't draw if game hasn't started or is paused
+  if(!gameStarted || gamePaused) {
+    // Show start popup if game hasn't started yet
+    if (!gameStarted && startPopup && !startPopup.classList.contains('hidden')) {
+      // Popup is already visible, just continue the loop
+    }
+    requestAnimationFrame(Draw)
+    return
+  }
+  
   if(!t){
     oX = oY = oZ = 0
     Rn = Math.random
@@ -1063,6 +1136,9 @@ async function Draw(){
       })
     }
     
+    // Make loadB function globally accessible
+    window.loadB = loadB
+    
     freq = 500
     
     advanceRows = () => {
@@ -1095,7 +1171,6 @@ async function Draw(){
      // keys[e.keyCode] = false
     //}
 
-    keys = Array(128).fill(false)
     window.addEventListener('keydown', e => { keys[e.keyCode] = true })
     window.addEventListener('keyup',   e => { keys[e.keyCode] = false })
     
@@ -1139,6 +1214,7 @@ async function Draw(){
             case 40:
             break;
             case 17: case 32: case 38:
+              if(!gameStarted || gamePaused) return
               if(roundover){
                 init(victory)
                 shotTimer = t + shotTimerInterval
@@ -1175,6 +1251,9 @@ async function Draw(){
       queue = [...queue, Rn()*sphereSrc.length|0]
     }
     
+    // Make loadShot function globally accessible
+    window.loadShot = loadShot
+    
     sparks = []
     iSparkv = .05
     spawnSparks = (X, Y, Z, id, mag=1) => {
@@ -1196,7 +1275,6 @@ async function Draw(){
       deathTimer = t + deathTimerInterval
       ballValue = 100
       victory = false
-      if(typeof highScore == 'undefined') highScore = 0
       rct = 0
       loadB()
       roundover = false
@@ -1207,6 +1285,10 @@ async function Draw(){
       ls = 3
       loadShot()
     }
+    
+    // Make init function globally accessible
+    window.init = init
+    // Auto-init the game
     init()
 
     checkCompletions = (X, Y, Z, id) => {
@@ -1662,32 +1744,11 @@ async function Draw(){
   }
   
   if(roundover){
-    x.globalAlpha = .66
-    x.drawImage(victory ? vicpic : death, 0, 0, c.width, c.height)
-    x.globalAlpha = 1
-    x.fillStyle = victory ? '#102b' : '#200b'
-    x.fillRect(0,0,c.width,c.height)
-    x.font = (fs = 150) + 'px Courier'
-    x.lineWidth = 20
-    if(victory){
-      x.fillStyle = '#0f8'
-      x.strokeStyle = '#1048'
-      x.strokeText('👍', c.width/2, c.height/2 - fs/2 - fs + fs/30)
-      x.fillText('👍', c.width/2, c.height/2 - fs/2 - fs + fs/30)
-      x.strokeText('victory!', c.width/2, c.height/2 - fs/2 + fs/30)
-      x.fillText('victory!', c.width/2, c.height/2 - fs/2 + fs/30)
-    }else{
-      x.fillStyle = '#f00'
-      x.strokeStyle = '#0008'
-      x.strokeText('☠️', c.width/2, c.height/2 - fs/2 - fs + fs/30)
-      x.fillText('☠️', c.width/2, c.height/2 - fs/2 - fs + fs/30)
-      x.strokeText('game over!', c.width/2, c.height/2 - fs/2 + fs/30)
-      x.fillText('game over!', c.width/2, c.height/2 - fs/2 + fs/30)
+    // Show game over screen instead of drawing on canvas
+    if(!gamePaused) {
+      showGameOver(victory)
     }
-    x.strokeText('hit space', c.width/2, c.height/2 + fs + fs/30)
-    x.fillText('hit space', c.width/2, c.height/2 + fs + fs/30)
-    x.strokeText('to continue', c.width/2, c.height/2 + fs * 2 + fs/30)
-    x.fillText('to continue', c.width/2, c.height/2 + fs * 2 + fs/30)
+    return
   }else{
     B.map((v, i) => {
       if(v[0]<-3.5 || v[0]>3.5){
@@ -1732,7 +1793,7 @@ async function Draw(){
     loadShot()
   }
   
-  if(!B.length) {
+  if(!B.length && gameStarted) {
     roundover = true
     victory = true
   }
@@ -1755,4 +1816,13 @@ async function Draw(){
   t+=1/60
   requestAnimationFrame(Draw)
 }
+
+// Wait for DOM to be loaded before initializing UI
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeGameUI)
+} else {
+  initializeGameUI()
+}
+
+// Start the game loop
 Draw()
