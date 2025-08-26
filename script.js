@@ -16,7 +16,7 @@ C = Math.cos
 S = Math.sin
 t = 0
 T = Math.tan
-const shootSound = new Audio('Assets/Sounds/shoot.WAV')
+const shootSound = new Audio('Assets/Sounds/shoot.wav')
 
 // Game state variables
 let gameStarted = false
